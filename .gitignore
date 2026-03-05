@@ -30,3 +30,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Help files ###
+**/HELP.md
+
