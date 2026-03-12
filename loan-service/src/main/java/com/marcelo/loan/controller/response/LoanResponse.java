@@ -10,11 +10,8 @@ public record LoanResponse(
         String id,
         String customerId,
         BigDecimal requestedAmount,
-        BigDecimal approvedAmount,
         Integer installments,
-        BigDecimal interestRate,
         LoanReason reason,
         LoanStatus status,
-        Instant createdAt,
-        Instant updatedAt
+        Instant createdAt
 ) {}
