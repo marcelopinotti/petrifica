@@ -9,12 +9,8 @@ public record AnalysisResponse(
         String id,
         String loanId,
         String customerId,
-        BigDecimal requestedAmount,
-        BigDecimal declaredIncome,
         Integer riskScore,
         Verdict verdict,
         String rejectionReason,
-        String notes,
-        List<RuleAppliedResponse> rulesApplied,
         Instant analyzedAt
 ) {}
