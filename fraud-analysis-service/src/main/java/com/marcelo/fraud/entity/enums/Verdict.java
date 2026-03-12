@@ -2,6 +2,6 @@ package com.marcelo.fraud.entity.enums;
 
 
 public enum Verdict {
-    APROVED,
+    APPROVED,
     REJECTED
 }
