@@ -2,20 +2,24 @@ server:
   port: 8082
 
 spring:
-  mongodb:
-    host: localhost
-    port: 27017
-    database: petrifica
-
+  mvc:
+    problemdetails:
+      enabled: true
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: petrifica
 
   security:
     oauth2:
-      resource server:
+      resource-server:
         jwt:
           issuer-uri: http://localhost:8080/realms/petrifica
 
+  kafka:
+    bootstrap-servers: localhost:9092
 
-Kafka:
-  url: localhost:9092
+kafka:
   topic: fraud-topic
   group: fraud-group
