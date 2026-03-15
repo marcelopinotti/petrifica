@@ -8,19 +8,15 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class CustomJwtGrantedAuthoritiesConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
 
-
     @Override
-    public  Collection<GrantedAuthority> convert(Jwt source) {
+    public Collection<GrantedAuthority> convert(Jwt source) {
         Map<String, List<String>> realmAccess = source.getClaim("realm_access");
+        if (realmAccess == null || realmAccess.get("roles") == null) return List.of();
         return realmAccess.get("roles").stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_"+role))
-                .collect(Collectors.toList());
-
+                .map(role -> (GrantedAuthority) new SimpleGrantedAuthority("ROLE_"+role))
+                .toList();
     }
-
-
 }
