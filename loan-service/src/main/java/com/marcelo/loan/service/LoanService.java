@@ -9,13 +9,13 @@ import com.marcelo.loan.entity.StatusHistory;
 import com.marcelo.loan.entity.enums.LoanEvent;
 import com.marcelo.loan.entity.enums.LoanStatus;
 import com.marcelo.loan.exception.LoanNotFoundException;
+import com.marcelo.loan.exception.UnauthorizedOperationException;
 import com.marcelo.loan.repository.LoanRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,12 +33,21 @@ public class LoanService {
         return loanMapper.toDTO(loan);
     }
 
-    public LoanResponse getLoanById(String id) {
-        return loanMapper.toDTO(findLoanById(id));
+    public LoanResponse getLoanById(String keycloakId, String id) {
+        Loan loan = findLoanById(id);
+        Customer customer = customerService.getByKeycloakId(keycloakId);
+        if (!loan.getCustomerId().equals(customer.getId())) {
+            throw new UnauthorizedOperationException("Você não tem permissão para acessar este empréstimo");
+        }
+        return loanMapper.toDTO(loan);
     }
 
-    public LoanResponse updateLoan(String id, LoanRequest request) {
+    public LoanResponse updateLoan(String keycloakId, String id, LoanRequest request) {
         Loan loan = findLoanById(id);
+        Customer customer = customerService.getByKeycloakId(keycloakId);
+        if (!loan.getCustomerId().equals(customer.getId())) {
+            throw new UnauthorizedOperationException("Você não tem permissão para atualizar este empréstimo");
+        }
         if (loan.getStatus() != LoanStatus.PENDING) {
             throw new IllegalStateException("Somente empréstimos com status PENDING podem ser atualizados");
         }
@@ -62,8 +71,12 @@ public class LoanService {
         loanRepository.save(loan);
     }
 
-    public void cancelLoan(String id) {
+    public void cancelLoan(String keycloakId, String id) {
         Loan loan = findLoanById(id);
+        Customer customer = customerService.getByKeycloakId(keycloakId);
+        if (!loan.getCustomerId().equals(customer.getId())) {
+            throw new UnauthorizedOperationException("Você não tem permissão para cancelar este empréstimo");
+        }
         changeStatus(loan, LoanEvent.CANCEL, "Empréstimo cancelado");
     }
 
