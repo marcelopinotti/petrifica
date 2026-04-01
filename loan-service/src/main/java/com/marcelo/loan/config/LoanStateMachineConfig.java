@@ -3,7 +3,7 @@ package com.marcelo.loan.config;
 import com.marcelo.loan.entity.enums.LoanEvent;
 import com.marcelo.loan.entity.enums.LoanStatus;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.statemachine.config.EnableStateMachine;
+import org.springframework.statemachine.config.EnableStateMachineFactory;
 import org.springframework.statemachine.config.StateMachineConfigurerAdapter;
 import org.springframework.statemachine.config.builders.StateMachineStateConfigurer;
 import org.springframework.statemachine.config.builders.StateMachineTransitionConfigurer;
@@ -11,7 +11,7 @@ import org.springframework.statemachine.config.builders.StateMachineTransitionCo
 import java.util.EnumSet;
 
 @Configuration
-@EnableStateMachine
+@EnableStateMachineFactory
 public class LoanStateMachineConfig extends StateMachineConfigurerAdapter<LoanStatus, LoanEvent> {
     @Override
     public void configure(StateMachineStateConfigurer<LoanStatus, LoanEvent> states) throws Exception {
