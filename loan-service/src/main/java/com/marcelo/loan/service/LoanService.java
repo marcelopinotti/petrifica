@@ -80,9 +80,10 @@ public class LoanService {
         changeStatus(loan, LoanEvent.CANCEL, "Empréstimo cancelado");
     }
 
-    public List<LoanResponse> getLoansByCustomer(String customerId) {
-        List<Loan> loan = loanRepository.findByCustomerId(customerId);
-        return loan.stream()
+    public List<LoanResponse> getLoansByKeycloakId(String keycloakId) {
+        Customer customer = customerService.getByKeycloakId(keycloakId);
+        List<Loan> loans = loanRepository.findByCustomerId(customer.getId());
+        return loans.stream()
                 .map(loanMapper::toDTO)
                 .toList();
     }
