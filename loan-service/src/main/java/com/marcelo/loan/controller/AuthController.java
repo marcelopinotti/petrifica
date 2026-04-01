@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,4 +20,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
+
+    private final CustomerService customerService;
+    private final CustomerMapper customerMapper;
+
+    @PostMapping("/register")
+    public ResponseEntity<CustomerResponse> register(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CustomerRequest request) {
+        String keycloakId = jwt.getSubject();
+        Customer customer = customerMapper.toEntity(request, keycloakId);
+        Customer saved = customerService.createCustomer(customer);
+        return ResponseEntity.status(HttpStatus.CREATED).body(customerMapper.toDTO(saved));
+    }
 }

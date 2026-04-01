@@ -13,6 +13,9 @@ public class CustomerService {
     private final CustomerRepository customerRepository;
 
     public Customer createCustomer(Customer customer) {
+        if (customerRepository.findByKeycloakId(customer.getKeycloakId()).isPresent()) {
+            throw new CustomerNotFoundException("Cliente já registrado");
+        }
         return customerRepository.save(customer);
     }
 
