@@ -21,5 +21,7 @@ spring:
     bootstrap-servers: localhost:9092
 
 kafka:
-  topic: fraud-topic
+  topics:
+    input: loan-topic
+    output: fraud-topic
   group: fraud-group
