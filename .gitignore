@@ -34,3 +34,12 @@ build/
 ### Help files ###
 **/HELP.md
 
+### Documentation ###
+motivo.md
+implementacao-fraude.md
+
+### Tasks ###
+task1/
+task2/
+
+
