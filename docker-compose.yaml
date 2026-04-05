@@ -61,6 +61,7 @@ services:
       SPRING_DATA_MONGODB_HOST: mongodb
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8080/realms/petrifica
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/petrifica/protocol/openid-connect/certs
     extra_hosts:
       - "localhost:host-gateway"
 
@@ -77,6 +78,7 @@ services:
       SPRING_DATA_MONGODB_HOST: mongodb
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8080/realms/petrifica
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/petrifica/protocol/openid-connect/certs
     extra_hosts:
       - "localhost:host-gateway"
 
