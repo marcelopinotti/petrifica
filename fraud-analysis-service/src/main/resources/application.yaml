@@ -25,3 +25,7 @@ kafka:
     input: loan-topic
     output: fraud-topic
   group: fraud-group
+
+mongock:
+  migration-scan-package:
+    - com.marcelo.fraud.migration
