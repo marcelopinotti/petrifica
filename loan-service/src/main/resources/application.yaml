@@ -26,3 +26,6 @@ spring:
 kafka:
   topic: loan-topic
 
+mongock:
+  migration-scan-package:
+    - com.marcelo.loan.migration
