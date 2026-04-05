@@ -6,6 +6,10 @@ import java.time.Instant;
 public record LoanRequestedEvent(
         String loanId,
         String customerId,
+        String customerCpf,
+        BigDecimal customerMonthlyIncome,
         BigDecimal requestedAmount,
-        BigDecimal declaredIncome
+        Integer installments,
+        String reason,
+        Instant requestedAt
 ) {}

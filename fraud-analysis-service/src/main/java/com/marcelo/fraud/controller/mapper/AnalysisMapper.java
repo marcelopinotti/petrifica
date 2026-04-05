@@ -15,7 +15,7 @@ public class AnalysisMapper {
                 .loanId(event.loanId())
                 .customerId(event.customerId())
                 .requestedAmount(event.requestedAmount())
-                .declaredIncome(event.declaredIncome())
+                .declaredIncome(event.customerMonthlyIncome())
                 .riskScore(0)
                 .rulesApplied(new ArrayList<>())
                 .build();
