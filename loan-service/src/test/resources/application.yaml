@@ -1,0 +1,25 @@
+server:
+  port: 8081
+
+spring:
+  mvc:
+    problemdetails:
+      enabled: true
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: petrifica-loan-test
+      auto-index-creation: true
+
+  security:
+    oauth2:
+      resource-server:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/petrifica
+
+  kafka:
+    bootstrap-servers: localhost:9093
+
+kafka:
+  topic: loan-topic
