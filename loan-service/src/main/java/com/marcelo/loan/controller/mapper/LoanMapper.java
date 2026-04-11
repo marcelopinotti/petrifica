@@ -2,9 +2,12 @@ package com.marcelo.loan.controller.mapper;
 
 import com.marcelo.loan.controller.request.LoanRequest;
 import com.marcelo.loan.controller.response.LoanResponse;
+import com.marcelo.loan.controller.response.StatusHistoryResponse;
 import com.marcelo.loan.entity.Loan;
 import com.marcelo.loan.entity.enums.LoanStatus;
 import org.springframework.stereotype.Component;
+
+import java.util.stream.Collectors;
 
 
 @Component
@@ -28,6 +31,10 @@ public class LoanMapper {
                 loan.getInstallments(),
                 loan.getReason(),
                 loan.getStatus(),
+                loan.getStatusHistory() != null ? 
+                        loan.getStatusHistory().stream()
+                                .map(h -> new StatusHistoryResponse(h.getStatus(), h.getChangedAt(), h.getNotes()))
+                                .toList() : null,
                 loan.getCreatedAt()
         );
     }

@@ -5,6 +5,7 @@ import com.marcelo.loan.entity.enums.LoanStatus;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 public record LoanResponse(
         String id,
@@ -13,5 +14,6 @@ public record LoanResponse(
         Integer installments,
         LoanReason reason,
         LoanStatus status,
+        List<StatusHistoryResponse> history,
         Instant createdAt
 ) {}

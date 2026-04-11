@@ -4,6 +4,7 @@ import com.marcelo.fraud.entity.enums.Verdict;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 public record AnalysisResponse(
         String id,
@@ -12,5 +13,6 @@ public record AnalysisResponse(
         Integer riskScore,
         Verdict verdict,
         String rejectionReason,
+        List<RuleAppliedResponse> rules,
         Instant analyzedAt
 ) {}

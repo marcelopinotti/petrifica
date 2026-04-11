@@ -1,11 +1,13 @@
 package com.marcelo.fraud.controller.mapper;
 
 import com.marcelo.fraud.controller.response.AnalysisResponse;
+import com.marcelo.fraud.controller.response.RuleAppliedResponse;
 import com.marcelo.fraud.entity.Analysis;
 import com.marcelo.fraud.event.LoanRequestedEvent;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @Component
 public class AnalysisMapper {
@@ -29,6 +31,10 @@ public class AnalysisMapper {
                 analysis.getRiskScore(),
                 analysis.getVerdict(),
                 analysis.getRejectionReason(),
+                analysis.getRulesApplied() != null ?
+                        analysis.getRulesApplied().stream()
+                                .map(r -> new RuleAppliedResponse(r.getRuleName(), r.getMessage(), r.getRiskScoreImpact()))
+                                .toList() : null,
                 analysis.getAnalyzedAt()
         );
     }
