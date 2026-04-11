@@ -25,6 +25,9 @@ spring:
 
 kafka:
   topic: loan-topic
+  consumer:
+    group-id: loan-group
+    fraud-topic: fraud-topic
 
 mongock:
   migration-scan-package:

@@ -23,3 +23,6 @@ spring:
 
 kafka:
   topic: loan-topic
+  consumer:
+    group-id: loan-group-test
+    fraud-topic: fraud-topic
