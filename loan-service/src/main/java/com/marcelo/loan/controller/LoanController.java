@@ -34,26 +34,26 @@ public class LoanController {
         return ResponseEntity.status(HttpStatus.CREATED).body(loanService.createLoan(keycloakId, request));
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<LoanResponse> updateLoan(@AuthenticationPrincipal Jwt jwt, @PathVariable String id, @Valid @RequestBody LoanRequest request) {
         String keycloakId = jwt.getSubject();
         return ResponseEntity.ok(loanService.updateLoan(keycloakId, id, request));
     }
 
-    @DeleteMapping("/cancel/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> cancelLoan(@AuthenticationPrincipal Jwt jwt, @PathVariable String id) {
         String keycloakId = jwt.getSubject();
         loanService.cancelLoan(keycloakId, id);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/details/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<LoanResponse> getLoanById(@AuthenticationPrincipal Jwt jwt, @PathVariable String id) {
         String keycloakId = jwt.getSubject();
         return ResponseEntity.ok(loanService.getLoanById(keycloakId, id));
     }
 
-    @GetMapping("/my-loans")
+    @GetMapping("/me")
     public ResponseEntity<List<LoanResponse>> getMyLoans(@AuthenticationPrincipal Jwt jwt) {
         String keycloakId = jwt.getSubject();
         return ResponseEntity.ok(loanService.getLoansByKeycloakId(keycloakId));
