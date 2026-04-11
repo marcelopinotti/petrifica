@@ -1,187 +1,189 @@
-#  Petrifica
+# Petrifica - Ecossistema de Empréstimos & Prevenção de Fraude
 
-> Plataforma de concessão de empréstimos com análise de fraude em tempo real, construída com arquitetura de microserviços.
+Projeto robusto de microserviços desenhado com os princípios de **Clean Architecture** e **Clean Code**, utilizando processamento assíncrono e arquitetura baseada em eventos para um ciclo de vida de crédito 100% automatizado.
 
----
+## 🏛️ Arquitetura Estratégica
 
-## 📌 Sobre o Projeto
+O sistema é composto por microserviços independentes que colaboram via **Kafka**, garantindo alta disponibilidade e resiliência:
 
-O **Petrifica** é um sistema backend de empréstimos que simula um fluxo real de crédito: o cliente solicita um empréstimo, o sistema analisa o risco de fraude automaticamente via mensageria assíncrona e retorna uma decisão de aprovação ou rejeição — tudo de forma segura, escalável e desacoplada.
+- **Loan Service**: Core de negócio. Gerencia Clientes, Solicitações de Empréstimo e o Ciclo de Vida do crédito (Status Machine).
+- **Fraud Analysis Service**: Motor de regras de risco. Analisa comportamentos, valores e histórico para decidir o veredito de aprovação.
+- **Keycloak**: Segurança centralizada com OAuth2 e JWT.
+- **Event-Driven Architecture**: Comunicação via tópicos `loan-requested` e `fraud-analyzed`.
 
----
+## 📁 Estrutura de Pastas (Clean Layers)
 
-## 🏗️ Arquitetura
+Ambos os serviços seguem uma estrutura padronizada de camadas:
 
-```
-┌─────────────────┐        Kafka         ┌──────────────────────────┐
-│   loan-service  │ ──── loan-topic ───► │  fraud-analysis-service  │
-│   (porta 8081)  │ ◄─── fraud-topic ─── │       (porta 8082)       │
-└─────────────────┘                      └──────────────────────────┘
-        │                                            │
-        └──────────────┬─────────────────────────────┘
-                       │
-              ┌────────▼────────┐
-              │    MongoDB      │
-              │   (porta 27017) │
-              └─────────────────┘
-                       │
-              ┌────────▼────────┐
-              │    Keycloak     │
-              │   (porta 8080)  │
-              └─────────────────┘
+```text
+Petrifica/
+|- loan-service/
+|  |- controller/   # Interface REST (DTOs, Mappers, Controllers)
+|  |- service/      # Regras de Negócio e Casos de Uso
+|  |- entity/       # Modelagem de Dados (MongoDB Documents)
+|  |- repository/   # Persistência de Dados
+|  |- messaging/    # Producers e Consumers Kafka
+|  |- config/       # Configurações Spring (Security, Kafka, Beans)
+|  |- exception/    # Tratamento Global de Erros (Problem Details)
 ```
 
-### Fluxo de um Empréstimo
+## Arquitetura de Eventos
 
-```
-Cliente autenticado
-      │
-      ▼
-POST /loans  ──► PENDING ──► UNDER_ANALYSIS ──► (Kafka) ──► Fraud Service
-                                                                    │
-                                                              Analisa risco
-                                                                    │
-                                                         ┌──────────▼──────────┐
-                                                         │  APPROVED / REJECTED │
-                                                         └─────────────────────┘
+```text
+POST /loans (loan-service)
+  -> publica LoanRequestedEvent em loan-topic
+  -> fraud-analysis-service consome loan-topic
+  -> calcula score e salva Analysis
+  -> publica FraudAnalysisResultEvent em fraud-topic
+  -> loan-service consome fraud-topic
+  -> aplica transicao APPROVE/REJECT e persiste historico
 ```
 
----
+## ⚙️ Tecnologias de Ponta
 
-## 🧩 Microserviços
+- **Backend**: Java 17, Spring Boot 3.4, Spring Security (OAuth2), Spring Kafka.
+- **Banco de Dados**: MongoDB (Persistência NoSQL flexível).
+- **Mensageria**: Apache Kafka (Desacoplamento e Escala).
+- **IAM**: Keycloak (Gerenciamento de Identidade e Acesso).
+- **Padronização**: Lombok, MapStruct (implícito), OpenAPI/Swagger.
 
-### 🏦 loan-service
-Responsável pelo ciclo de vida completo do empréstimo.
+## Modelagem de Dados
 
-| Endpoint | Método | Acesso | Descrição |
-|---|---|---|---|
-| `/auth/register` | POST | Autenticado | Registra o cliente no sistema |
-| `/loans` | POST | Autenticado | Solicita um novo empréstimo |
-| `/loans/details/{id}` | GET | Autenticado | Busca empréstimo por ID |
-| `/loans/my-loans` | GET | Autenticado | Lista empréstimos do usuário |
-| `/loans/update/{id}` | PUT | Autenticado | Atualiza empréstimo pendente |
-| `/loans/cancel/{id}` | DELETE | Autenticado | Cancela empréstimo |
-| `/loans/pending` | GET | `ROLE_ANALYST` | Lista todos os empréstimos pendentes |
+```mermaid
+erDiagram
+    CUSTOMER ||--o{ LOAN : "solicita"
+    LOAN ||--o{ STATUS_HISTORY : "historico"
+    LOAN ||--o| ANALYSIS : "analisado"
+    ANALYSIS ||--o{ RULE_APPLIED : "aplica"
 
-**Estados do empréstimo (State Machine):**
+    CUSTOMER {
+        string id PK
+        string keycloakId UK
+        string fullName
+        string email UK
+        string cpf UK
+        decimal monthlyIncome
+        instant createdAt
+    }
+
+    LOAN {
+        string id PK
+        string customerId FK
+        decimal requestedAmount
+        decimal approvedAmount
+        int installments
+        decimal interestRate
+        enum reason "HOME|VEHICLE|EDUCATION|OTHER"
+        enum status "PENDING|UNDER_ANALYSIS|APPROVED|REJECTED|CANCELLED"
+        instant createdAt
+        instant updatedAt
+    }
+
+    STATUS_HISTORY {
+        enum status
+        instant changedAt
+        string notes
+    }
+
+    ANALYSIS {
+        string id PK
+        string loanId FK
+        string customerId FK
+        decimal requestedAmount
+        decimal declaredIncome
+        int riskScore
+        enum verdict "APPROVED|REJECTED"
+        string rejectionReason
+        string notes
+        instant analyzedAt
+    }
+
+    RULE_APPLIED {
+        string ruleName
+        string message
+        int riskScoreImpact
+    }
 ```
-PENDING ──► UNDER_ANALYSIS ──► APPROVED
-                           └──► REJECTED
-PENDING ──► CANCELLED
+
+## Regras de Risco Implementadas
+
+No `FraudAnalysisService.analyzeLoan(...)`:
+
+1. Valor solicitado > 50% da renda mensal: `+30`
+2. Valor solicitado > `50000`: `+40`
+3. Cliente com mais de 1 analise aprovada no historico: `+25`
+4. Parcelas > `48`: `+20`
+
+Veredito:
+- `score < 50` -> `APPROVED`
+- `score >= 50` -> `REJECTED`
+
+## Endpoints Principais
+
+### loan-service (`http://localhost:8081`)
+
+- `POST /customers`
+- `POST /loans`
+- `GET /loans/{id}`
+- `PUT /loans/{id}`
+- `DELETE /loans/{id}`
+- `GET /loans/me`
+- `GET /loans/pending` (role `ANALYST`)
+
+### fraud-analysis-service (`http://localhost:8082`)
+
+- `GET /frauds/loans/{loanId}`
+- `GET /frauds/customers/{customerId}`
+- `GET /frauds/stats`
+
+## 🚀 Como Executar
+
+O projeto já está pronto para rodar com **Docker Compose**.
+
+### 1) Build dos serviços
+
+```bash
+mvn clean package -DskipTests
 ```
 
-### 🔍 fraud-analysis-service
-Responsável pela análise de risco e detecção de fraude.
-
-- Consome eventos do `loan-topic`
-- Aplica regras de risco configuráveis
-- Publica resultado no `fraud-topic`
-
----
-
-## 🛠️ Tecnologias
-
-| Tecnologia | Versão | Uso |
-|---|---|---|
-| Java | 17 | Linguagem principal |
-| Spring Boot | 3.4.5 | Framework base |
-| Spring Security + OAuth2 | - | Autenticação e autorização |
-| Spring State Machine | 4.0.0 | Ciclo de vida do empréstimo |
-| Spring Kafka | - | Mensageria assíncrona |
-| MongoDB | 5.0 | Banco de dados |
-| Keycloak | 25.0.2 | Identity Provider (JWT) |
-| Apache Kafka | 7.5.0 | Broker de mensagens |
-| Lombok | - | Redução de boilerplate |
-| Docker + Docker Compose | - | Containerização |
-
----
-
-## 🚀 Como Rodar
-
-### Pré-requisitos
-- Docker e Docker Compose instalados
-
-### 1. Subir a infraestrutura e os serviços
+### 2) Subir infraestrutura
 
 ```bash
 docker compose up -d --build
 ```
 
-### 2. Configurar o Keycloak
+### 3) Monitoramento
 
-Acesse `http://localhost:8080` com `admin / admin` e:
+- **Swagger UI**: `http://localhost:8081/swagger-ui.html`
+- **Keycloak Console**: `http://localhost:8080` (admin/admin)
+- **MongoDB**: `localhost:27017`
 
-1. Crie o realm **petrifica**
-2. Crie o client **petrifica-client** com _Direct Access Grants_ habilitado
-3. Crie as roles: `ROLE_USER`, `ROLE_ANALYST`
-4. Crie os usuários e atribua as roles
-
-### 3. Obter token JWT
+## Validacao Rapida do Fluxo
 
 ```bash
-curl -X POST http://localhost:8080/realms/petrifica/protocol/openid-connect/token \
+TOKEN=$(curl -s -X POST http://localhost:8080/realms/petrifica/protocol/openid-connect/token \
   -d "grant_type=password" \
   -d "client_id=petrifica-client" \
-  -d "username=SEU_USUARIO" \
-  -d "password=SUA_SENHA"
-```
+  -d "username=joao" \
+  -d "password=123456" | jq -r '.access_token')
 
-### 4. Usar a API
-
-```bash
-# Registrar cliente
-curl -X POST http://localhost:8081/auth/register \
-  -H "Authorization: Bearer SEU_TOKEN" \
+curl -s -X POST http://localhost:8081/customers \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"fullName":"João Silva","email":"joao@email.com","cpf":"12345678900","monthlyIncome":5000}'
+  -d '{"fullName":"Joao Silva","email":"joao@email.com","cpf":"12345678900","monthlyIncome":10000}'
 
-# Solicitar empréstimo
-curl -X POST http://localhost:8081/loans \
-  -H "Authorization: Bearer SEU_TOKEN" \
+LOAN_ID=$(curl -s -X POST http://localhost:8081/loans \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"requestedAmount":10000,"installments":12,"reason":"HOME_RENOVATION"}'
+  -d '{"requestedAmount":3000,"installments":12,"reason":"HOME"}' | jq -r '.id')
+
+sleep 3
+
+curl -s -H "Authorization: Bearer $TOKEN" http://localhost:8081/loans/$LOAN_ID | jq '.status'
 ```
 
----
+## Observacoes Operacionais
 
-## 📁 Estrutura do Projeto
-
-```
-petrifica/
-├── loan-service/
-│   └── src/main/java/com/marcelo/loan/
-│       ├── config/          # Security, StateMachine, Mongo
-│       ├── controller/      # AuthController, LoanController
-│       ├── entity/          # Loan, Customer, enums
-│       ├── exception/       # Handlers e exceções customizadas
-│       ├── repository/      # LoanRepository, CustomerRepository
-│       └── service/         # LoanService, CustomerService, LoanStateService
-│
-├── fraud-analysis-service/
-│   └── src/main/java/com/marcelo/fraud/
-│       ├── config/          # Security, Mongo
-│       ├── controller/      # FraudController
-│       ├── entity/          # Analysis, RiskRule
-│       ├── event/           # LoanRequestedEvent
-│       ├── exception/       # Handlers e exceções customizadas
-│       ├── repository/      # AnalysisRepository, RiskRuleRepository
-│       └── service/         # FraudAnalysisService
-│
-└── docker-compose.yaml
-```
-
----
-
-## 🔐 Segurança
-
-- Autenticação via **JWT** emitido pelo Keycloak
-- Autorização por **roles** extraídas do claim `realm_access`
-- Endpoints protegidos com `@Secured` por role
-- Validação de input com Bean Validation (`@Valid`)
-- Sessão **stateless** — sem cookies ou estado no servidor
-
----
-
-## 👤 Autor
-
-Feito por **Marcelo** 🚀
+- No Docker, os servicos usam `kafka:29092` internamente e `localhost:9092` externamente.
+- Para JWT no container, use configuracao de `issuer-uri` e/ou `jwk-set-uri` coerente com o host acessivel pelo servico.
+- Migracoes Mongock sao executadas na inicializacao dos serviços.
