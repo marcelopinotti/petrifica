@@ -10,18 +10,18 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/fraud")
+@RequestMapping("/frauds")
 @RequiredArgsConstructor
 public class FraudController {
 
     private final FraudAnalysisService fraudAnalysisService;
 
-    @GetMapping("/analysis/loan/{loanId}")
+    @GetMapping("/loans/{loanId}")
     public ResponseEntity<AnalysisResponse> getAnalysisByLoanId(@PathVariable String loanId) {
         return ResponseEntity.ok(fraudAnalysisService.getAnalysisByLoanId(loanId));
     }
 
-    @GetMapping("/analysis/customer/{customerId}")
+    @GetMapping("/customers/{customerId}")
     public ResponseEntity<List<AnalysisResponse>> getAnalysisByCustomerId(@PathVariable String customerId) {
         return ResponseEntity.ok(fraudAnalysisService.getAnalysisByCustomerId(customerId));
     }
