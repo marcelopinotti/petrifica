@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/customers")
 @RequiredArgsConstructor
+@Tag(name = "Customer Auth", description = "Endpoints para registro e consulta de clientes")
 public class AuthController {
 
     private final CustomerService customerService;
@@ -34,5 +35,13 @@ public class AuthController {
         Customer customer = customerMapper.toEntity(request, keycloakId);
         Customer saved = customerService.createCustomer(customer);
         return ResponseEntity.status(HttpStatus.CREATED).body(customerMapper.toDTO(saved));
+    }
+
+    @GetMapping("/me")
+    @Operation(summary = "Obter meus dados", description = "Retorna os dados do perfil do cliente autenticado")
+    public ResponseEntity<CustomerResponse> getMyData(@AuthenticationPrincipal Jwt jwt) {
+        String keycloakId = jwt.getSubject();
+        Customer customer = customerService.getByKeycloakId(keycloakId);
+        return ResponseEntity.ok(customerMapper.toDTO(customer));
     }
 }

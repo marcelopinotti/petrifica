@@ -19,11 +19,6 @@ public class CustomerService {
         return customerRepository.save(customer);
     }
 
-    public Customer getCustomerById(String id) {
-        return customerRepository.findById(id)
-                .orElseThrow(() -> new CustomerNotFoundException("Cliente não encontrado: " + id));
-    }
-
     public Customer getByKeycloakId(String keycloakId) {
         return customerRepository.findByKeycloakId(keycloakId)
                 .orElseThrow(() -> new CustomerNotFoundException("Cliente não encontrado: " + keycloakId));
