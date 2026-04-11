@@ -17,14 +17,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/customers")
 @RequiredArgsConstructor
 public class AuthController {
 
     private final CustomerService customerService;
     private final CustomerMapper customerMapper;
 
-    @PostMapping("/register")
+    @PostMapping
     public ResponseEntity<CustomerResponse> register(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CustomerRequest request) {
         String keycloakId = jwt.getSubject();
         Customer customer = customerMapper.toEntity(request, keycloakId);
