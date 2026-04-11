@@ -8,6 +8,7 @@ import com.marcelo.loan.entity.Loan;
 import com.marcelo.loan.entity.enums.LoanEvent;
 import com.marcelo.loan.entity.enums.LoanReason;
 import com.marcelo.loan.entity.enums.LoanStatus;
+import com.marcelo.loan.event.FraudAnalysisResultEvent;
 import com.marcelo.loan.event.LoanRequestedEvent;
 import com.marcelo.loan.messaging.LoanEventProducer;
 import com.marcelo.loan.repository.LoanRepository;
@@ -21,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -171,5 +173,49 @@ class LoanServiceKafkaIntegrationTest {
         }
 
         verify(loanEventProducer, never()).publishLoanRequested(any());
+    }
+
+    @Test
+    void shouldApproveLoanWhenFraudVerdictIsApproved() {
+        // Given
+        loan.setStatus(LoanStatus.UNDER_ANALYSIS);
+        when(loanRepository.findById("loan-789")).thenReturn(Optional.of(loan));
+        when(loanStateService.processEvent(LoanStatus.UNDER_ANALYSIS, LoanEvent.APPROVE)).thenReturn(LoanStatus.APPROVED);
+
+        FraudAnalysisResultEvent event = new FraudAnalysisResultEvent(
+                "loan-789",
+                "customer-123",
+                "APPROVED",
+                null
+        );
+
+        // When
+        loanService.applyFraudDecision(event);
+
+        // Then
+        assertThat(loan.getStatus()).isEqualTo(LoanStatus.APPROVED);
+        verify(loanStateService).processEvent(LoanStatus.UNDER_ANALYSIS, LoanEvent.APPROVE);
+        verify(loanRepository, atLeastOnce()).save(loan);
+    }
+
+    @Test
+    void shouldIgnoreFraudEventWhenLoanAlreadyFinalized() {
+        // Given
+        loan.setStatus(LoanStatus.APPROVED);
+        when(loanRepository.findById("loan-789")).thenReturn(Optional.of(loan));
+
+        FraudAnalysisResultEvent event = new FraudAnalysisResultEvent(
+                "loan-789",
+                "customer-123",
+                "REJECTED",
+                "score alto"
+        );
+
+        // When
+        loanService.applyFraudDecision(event);
+
+        // Then
+        verify(loanStateService, never()).processEvent(any(), any());
+        verify(loanRepository, never()).save(loan);
     }
 }

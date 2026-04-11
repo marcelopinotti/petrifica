@@ -8,17 +8,20 @@ import com.marcelo.loan.entity.Loan;
 import com.marcelo.loan.entity.StatusHistory;
 import com.marcelo.loan.entity.enums.LoanEvent;
 import com.marcelo.loan.entity.enums.LoanStatus;
+import com.marcelo.loan.event.FraudAnalysisResultEvent;
 import com.marcelo.loan.event.LoanRequestedEvent;
 import com.marcelo.loan.exception.LoanNotFoundException;
 import com.marcelo.loan.exception.UnauthorizedOperationException;
 import com.marcelo.loan.messaging.LoanEventProducer;
 import com.marcelo.loan.repository.LoanRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LoanService {
@@ -33,8 +36,7 @@ public class LoanService {
         Loan loan = loanMapper.toEntity(request, customer.getId());
         loanRepository.save(loan);
         changeStatus(loan, LoanEvent.SUBMIT, "Empréstimo solicitado");
-        
-        // Publicar evento para análise de fraude
+
         LoanRequestedEvent event = new LoanRequestedEvent(
                 loan.getId(),
                 customer.getId(),
@@ -110,6 +112,83 @@ public class LoanService {
         return loans.stream()
                 .map(loanMapper::toDTO)
                 .toList();
+    }
+
+    public void applyFraudDecision(FraudAnalysisResultEvent event) {
+        Loan loan = findLoanForFraudDecision(event);
+        if (loan == null) {
+            return;
+        }
+
+        if (isLoanAlreadyFinished(loan)) {
+            log.info("Evento duplicado ou tardio ignorado: loanId={}, statusAtual={}",
+                    event.loanId(), loan.getStatus());
+            return;
+        }
+
+        LoanEvent decisionEvent = determineDecisionEvent(event.verdict());
+        String notes = generateDecisionNotes(decisionEvent, event.rejectionReason());
+
+        changeStatus(loan, decisionEvent, notes);
+        
+        log.info("Status atualizado por resultado de fraude: loanId={}, novoStatus={}",
+                loan.getId(), loan.getStatus());
+    }
+
+    private Loan findLoanForFraudDecision(FraudAnalysisResultEvent event) {
+        Loan loan = loanRepository.findById(event.loanId()).orElse(null);
+        
+        if (loan == null) {
+            log.warn("Ignorando resultado de fraude para loan inexistente: loanId={}", event.loanId());
+            return null;
+        }
+
+        if (!loan.getCustomerId().equals(event.customerId())) {
+            log.error("Evento inconsistente: loanId={}, customerId esperado={}, customerId recebido={}",
+                    event.loanId(), loan.getCustomerId(), event.customerId());
+            return null;
+        }
+        
+        return loan;
+    }
+
+    private boolean isLoanAlreadyFinished(Loan loan) {
+        return loan.getStatus() == LoanStatus.APPROVED
+                || loan.getStatus() == LoanStatus.REJECTED
+                || loan.getStatus() == LoanStatus.CANCELLED;
+    }
+
+    private LoanEvent determineDecisionEvent(String verdict) {
+        if (verdict == null) {
+            throw new IllegalArgumentException("Veredito de fraude não pode ser nulo");
+        }
+        
+        String cleanVerdict = verdict.trim().toUpperCase();
+        
+        if ("APPROVED".equals(cleanVerdict)) {
+            return LoanEvent.APPROVE;
+        }
+        
+        if ("REJECTED".equals(cleanVerdict)) {
+            return LoanEvent.REJECT;
+        }
+        
+        throw new IllegalArgumentException("Veredito de fraude inválido: " + verdict);
+    }
+
+    private String generateDecisionNotes(LoanEvent decisionEvent, String rejectionReason) {
+        if (decisionEvent == LoanEvent.APPROVE) {
+            return "Aprovado pela análise de fraude";
+        }
+        
+        String notes = "Rejeitado pela análise de fraude: ";
+        if (rejectionReason == null || rejectionReason.isEmpty()) {
+            notes += "sem motivo informado";
+        } else {
+            notes += rejectionReason;
+        }
+        
+        return notes;
     }
 
     private Loan findLoanById(String id){
