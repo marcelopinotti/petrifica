@@ -20,6 +20,15 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
+
 kafka:
   topics:
     input: loan-topic
