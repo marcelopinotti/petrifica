@@ -120,21 +120,35 @@ Veredito:
 
 ## Endpoints Principais
 
+API versionada em `/api/v1/` com separação entre contextos de cliente, autenticação e administração. Endpoints legados (sem versionamento) ainda existem em paralelo para compatibilidade.
+
 ### loan-service (`http://localhost:8081`)
 
-- `POST /customers`
-- `POST /loans`
-- `GET /loans/{id}`
-- `PUT /loans/{id}`
-- `DELETE /loans/{id}`
-- `GET /loans/me`
-- `GET /loans/pending` (role `ANALYST`)
+**Autenticação** — `AuthenticationController`
+- `POST /api/v1/auth/register` — Registrar novo cliente
+
+**Cliente** — `CustomerController`
+- `GET /api/v1/customers/me` — Obter meus dados
+
+**Empréstimos** — `LoanController` (mapeado em `/loans`)
+- `POST /loans` — Criar empréstimo
+- `GET /loans/{id}` — Detalhes do empréstimo
+- `PUT /loans/{id}` — Atualizar empréstimo (somente em `PENDING`)
+- `DELETE /loans/{id}` — Cancelar empréstimo
+- `GET /loans/me` — Listar meus empréstimos
+- `GET /loans/pending` — Empréstimos em análise (role `ANALYST`)
+
+**Admin** — `AdminLoanController`
+- `GET /api/v1/admin/loans/pending` — Empréstimos em `PENDING` + `UNDER_ANALYSIS` (role `ANALYST`)
 
 ### fraud-analysis-service (`http://localhost:8082`)
 
-- `GET /frauds/loans/{loanId}`
-- `GET /frauds/customers/{customerId}`
-- `GET /frauds/stats`
+**Análises** — `AnalysisController` (Cliente ou Analista)
+- `GET /api/v1/analyses/loans/{loanId}` — Análise por empréstimo
+- `GET /api/v1/analyses/customers/{customerId}` — Histórico de análises por cliente
+
+**Admin** — `AdminFraudController` (role `ANALYST`)
+- `GET /api/v1/admin/frauds/stats` — Estatísticas globais (aprovações, rejeições, score médio)
 
 ## 🚀 Como Executar
 
@@ -167,7 +181,7 @@ TOKEN=$(curl -s -X POST http://localhost:8080/realms/petrifica/protocol/openid-c
   -d "username=joao" \
   -d "password=123456" | jq -r '.access_token')
 
-curl -s -X POST http://localhost:8081/customers \
+curl -s -X POST http://localhost:8081/api/v1/auth/register \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"fullName":"Joao Silva","email":"joao@email.com","cpf":"12345678900","monthlyIncome":10000}'
