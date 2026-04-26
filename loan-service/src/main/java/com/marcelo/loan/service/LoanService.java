@@ -108,7 +108,9 @@ public class LoanService {
     }
 
     public List<LoanResponse> getPendingLoans() {
-        List<Loan> loans = loanRepository.findByStatus(LoanStatus.PENDING);
+        List<Loan> loans = loanRepository.findByStatusIn(
+                List.of(LoanStatus.PENDING, LoanStatus.UNDER_ANALYSIS)
+        );
         return loans.stream()
                 .map(loanMapper::toDTO)
                 .toList();

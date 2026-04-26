@@ -9,5 +9,6 @@ import java.util.List;
 public interface LoanRepository extends MongoRepository<Loan, String> {
     List<Loan> findByCustomerId(String customerId);
     List<Loan> findByStatus(LoanStatus status);
+    List<Loan> findByStatusIn(List<LoanStatus> statuses);
     boolean existsByCustomerIdAndStatusIn(String customerId, List<LoanStatus> statuses);
 }
