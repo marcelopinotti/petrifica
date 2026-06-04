@@ -5,11 +5,23 @@ spring:
   mvc:
     problemdetails:
       enabled: true
-  data:
-    mongodb:
-      host: localhost
-      port: 27017
-      database: petrifica
+  datasource:
+    url: jdbc:postgresql://localhost:5432/petrifica
+    username: petrifica
+    password: petrifica
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        driver-class-name: org.postgresql.Driver
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
 
   security:
     oauth2:

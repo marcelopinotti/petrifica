@@ -24,13 +24,17 @@ public class AnalysisController {
     @GetMapping("/loans/{loanId}")
     @Operation(summary = "Obter análise de fraude por Empréstimo", description = "Busca o resultado detalhado da análise de fraude para um empréstimo específico")
     public ResponseEntity<AnalysisResponse> getAnalysisByLoanId(@PathVariable String loanId) {
-        return ResponseEntity.ok(fraudAnalysisService.getAnalysisByLoanId(loanId));
+        return ResponseEntity.ok(
+        //        fraudAnalysisService.getAnalysisByLoanId(loanId)
+        ).build();
     }
 
     @GetMapping("/customers/{customerId}")
     @Operation(summary = "Listar histórico de análises por Cliente", description = "Retorna o histórico completo de análises de fraude para um cliente específico")
     public ResponseEntity<List<AnalysisResponse>> getAnalysisByCustomerId(@PathVariable String customerId) {
-        return ResponseEntity.ok(fraudAnalysisService.getAnalysisByCustomerId(customerId));
+        return ResponseEntity.ok(
+                //  fraudAnalysisService.getAnalysisByCustomerId(customerId);
+        ).build();
     }
 
 }

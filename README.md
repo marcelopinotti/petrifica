@@ -51,58 +51,120 @@ POST /loans (loan-service)
 
 ```mermaid
 erDiagram
+    CUSTOMER ||--o{ CUSTOMER_ADDRESS : "possui"
     CUSTOMER ||--o{ LOAN : "solicita"
+    CUSTOMER ||--o{ DEVICE : "usa"
+
+    DEVICE ||--o{ LOAN : "origina"
     LOAN ||--o{ STATUS_HISTORY : "historico"
-    LOAN ||--o| ANALYSIS : "analisado"
-    ANALYSIS ||--o{ RULE_APPLIED : "aplica"
+    LOAN ||--o| FRAUD_ANALYSIS : "analisado"
+    LOAN ||--o{ LOCATION_EVIDENCE : "gera"
+
+    IP_ADDRESS ||--o{ LOCATION_EVIDENCE : "usado_em"
+
+    FRAUD_ANALYSIS ||--o{ FRAUD_RULE_RESULT : "possui_resultados"
 
     CUSTOMER {
         string id PK
         string keycloakId UK
+        string customerType "PF|PJ"
         string fullName
         string email UK
         string cpf UK
+        string cnpj UK
         decimal monthlyIncome
         instant createdAt
+    }
+
+    CUSTOMER_ADDRESS {
+        string id PK
+        string customerId FK
+        string cep
+        string street
+        string city
+        string state
+        point location "PostGIS"
+    }
+
+    DEVICE {
+        string id PK
+        string deviceFingerprint UK
+        string userAgent
+        string platform
+        instant createdAt
+    }
+
+    IP_ADDRESS {
+        string id PK
+        string ip UK
+        string country
+        string state
+        string city
+        string isp
+        boolean isVpn
+        boolean isProxy
+        boolean isDatacenter
+        point location "PostGIS"
     }
 
     LOAN {
         string id PK
         string customerId FK
+        string deviceId FK
         decimal requestedAmount
         decimal approvedAmount
         int installments
         decimal interestRate
+        decimal declaredIncome
         enum reason "HOME|VEHICLE|EDUCATION|OTHER"
-        enum status "PENDING|UNDER_ANALYSIS|APPROVED|REJECTED|CANCELLED"
+        enum status "PENDING|UNDER_ANALYSIS|APPROVED|REJECTED|CANCELLED|MANUAL_REVIEW"
         instant createdAt
         instant updatedAt
     }
 
     STATUS_HISTORY {
+        string id PK
+        string loanId FK
         enum status
         instant changedAt
         string notes
     }
 
-    ANALYSIS {
+    FRAUD_ANALYSIS {
         string id PK
         string loanId FK
         string customerId FK
-        decimal requestedAmount
-        decimal declaredIncome
-        int riskScore
-        enum verdict "APPROVED|REJECTED"
+        int totalRules
+        int passedRules
+        int failedRules
+        int inconclusiveRules
+        decimal passPercentage
+        enum verdict "APPROVED|REJECTED|MANUAL_REVIEW"
         string rejectionReason
         string notes
         instant analyzedAt
     }
 
-    RULE_APPLIED {
+    FRAUD_RULE_RESULT {
+        string id PK
+        string fraudAnalysisId FK
         string ruleName
+        enum result "PASSOU|FALHOU|INCONCLUSIVO"
         string message
-        int riskScoreImpact
+        instant createdAt
     }
+
+    LOCATION_EVIDENCE {
+        string id PK
+        string loanId FK
+        string ipAddressId FK
+        point gpsLocation "PostGIS"
+        decimal gpsAccuracyMeters
+        decimal distanceIpToAddressMeters
+        decimal distanceGpsToAddressMeters
+        instant createdAt
+    }
+```
 ```
 
 ## Regras de Risco Implementadas

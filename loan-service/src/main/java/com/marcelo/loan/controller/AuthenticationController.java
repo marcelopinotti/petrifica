@@ -8,7 +8,7 @@ import com.marcelo.loan.service.CustomerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,12 +20,11 @@ import org.springframework.security.oauth2.jwt.Jwt;
 
 @RestController
 @RequestMapping("/api/v1/auth")
-@RequiredArgsConstructor
 @Tag(name = "Authentication", description = "Endpoints de autenticação e registro de usuários")
 public class AuthenticationController {
 
-    private final CustomerService customerService;
-    private final CustomerMapper customerMapper;
+//    private final CustomerService customerService;
+//    private final CustomerMapper customerMapper;
 
     @PostMapping("/register")
     @Operation(summary = "Registrar novo cliente", description = "Cria um perfil de cliente vinculado ao Keycloak Id do token JWT")
@@ -33,8 +32,9 @@ public class AuthenticationController {
             @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody CustomerRequest request) {
         String keycloakId = jwt.getSubject();
-        Customer customer = customerMapper.toEntity(request, keycloakId);
-        Customer saved = customerService.createCustomer(customer);
-        return ResponseEntity.status(HttpStatus.CREATED).body(customerMapper.toDTO(saved));
+//        Customer customer = customerMapper.toEntity(request, keycloakId);
+//        Customer saved = customerService.createCustomer(customer);
+        return null;
+           //     ResponseEntity.status(HttpStatus.CREATED).body(customerMapper.toDTO(saved));
     }
 }
