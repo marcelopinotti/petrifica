@@ -9,33 +9,33 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
-@Component
+//@Component
 public class AnalysisMapper {
+//
+//    public Analysis toEntity(LoanRequestedEvent event) {
+//        return Analysis.builder()
+//                .loanId(event.loanId())
+//                .customerId(event.customerId())
+//                .requestedAmount(event.requestedAmount())
+//                .declaredIncome(event.customerMonthlyIncome())
+//                .riskScore(0)
+//                .rulesApplied(new ArrayList<>())
+//                .build();
+//    }
 
-    public Analysis toEntity(LoanRequestedEvent event) {
-        return Analysis.builder()
-                .loanId(event.loanId())
-                .customerId(event.customerId())
-                .requestedAmount(event.requestedAmount())
-                .declaredIncome(event.customerMonthlyIncome())
-                .riskScore(0)
-                .rulesApplied(new ArrayList<>())
-                .build();
-    }
-
-    public AnalysisResponse toDTO(Analysis analysis) {
-        return new AnalysisResponse(
-                analysis.getId(),
-                analysis.getLoanId(),
-                analysis.getCustomerId(),
-                analysis.getRiskScore(),
-                analysis.getVerdict(),
-                analysis.getRejectionReason(),
-                analysis.getRulesApplied() != null ?
-                        analysis.getRulesApplied().stream()
-                                .map(r -> new RuleAppliedResponse(r.getRuleName(), r.getMessage(), r.getRiskScoreImpact()))
-                                .toList() : null,
-                analysis.getAnalyzedAt()
-        );
-    }
+//    public AnalysisResponse toDTO(Analysis analysis) {
+//        return new AnalysisResponse(
+//                analysis.getId(),
+//                analysis.getLoanId(),
+//                analysis.getCustomerId(),
+//                analysis.getRiskScore(),
+//                analysis.getVerdict(),
+//                analysis.getRejectionReason(),
+//                analysis.getRulesApplied() != null ?
+//                        analysis.getRulesApplied().stream()
+//                                .map(r -> new RuleAppliedResponse(r.getRuleName(), r.getMessage(), r.getRiskScoreImpact()))
+//                                .toList() : null,
+//                analysis.getAnalyzedAt()
+//        );
+//    }
 }

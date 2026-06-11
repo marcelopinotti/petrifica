@@ -1,0 +1,62 @@
+<?xml version="1.0" ?>
+<mxfile host="app.diagrams.net">
+  <diagram name="Antifraud DB">
+    <mxGraphModel>
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="2" value="customers" style="shape=swimlane;html=1;" vertex="1" parent="1">
+          <mxGeometry x="20" y="20" width="220" height="120" as_="geometry"/>
+        </mxCell>
+        <mxCell id="3" value="customer_addresses" style="shape=swimlane;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="20" width="220" height="120" as_="geometry"/>
+        </mxCell>
+        <mxCell id="4" value="loan_applications" style="shape=swimlane;html=1;" vertex="1" parent="1">
+          <mxGeometry x="20" y="220" width="220" height="120" as_="geometry"/>
+        </mxCell>
+        <mxCell id="5" value="fraud_analysis" style="shape=swimlane;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="220" width="220" height="120" as_="geometry"/>
+        </mxCell>
+        <mxCell id="6" value="fraud_rules" style="shape=swimlane;html=1;" vertex="1" parent="1">
+          <mxGeometry x="600" y="20" width="220" height="120" as_="geometry"/>
+        </mxCell>
+        <mxCell id="7" value="fraud_rule_results" style="shape=swimlane;html=1;" vertex="1" parent="1">
+          <mxGeometry x="600" y="220" width="220" height="120" as_="geometry"/>
+        </mxCell>
+        <mxCell id="8" value="devices" style="shape=swimlane;html=1;" vertex="1" parent="1">
+          <mxGeometry x="20" y="450" width="220" height="120" as_="geometry"/>
+        </mxCell>
+        <mxCell id="9" value="ip_addresses" style="shape=swimlane;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="450" width="220" height="120" as_="geometry"/>
+        </mxCell>
+        <mxCell id="10" value="location_evidences" style="shape=swimlane;html=1;" vertex="1" parent="1">
+          <mxGeometry x="600" y="450" width="220" height="120" as_="geometry"/>
+        </mxCell>
+        <mxCell id="100" edge="1" parent="1" source="2" target="3" style="endArrow=block;html=1;">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="101" edge="1" parent="1" source="2" target="4" style="endArrow=block;html=1;">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="102" edge="1" parent="1" source="4" target="5" style="endArrow=block;html=1;">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="103" edge="1" parent="1" source="5" target="7" style="endArrow=block;html=1;">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="104" edge="1" parent="1" source="6" target="7" style="endArrow=block;html=1;">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="105" edge="1" parent="1" source="4" target="10" style="endArrow=block;html=1;">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="106" edge="1" parent="1" source="9" target="10" style="endArrow=block;html=1;">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="107" edge="1" parent="1" source="8" target="4" style="endArrow=block;html=1;">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

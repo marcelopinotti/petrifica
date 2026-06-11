@@ -13,29 +13,29 @@ import java.util.stream.Collectors;
 @Component
 public class LoanMapper {
 
-    public Loan toEntity(LoanRequest request, String customerId) {
-        return Loan.builder()
-                .customerId(customerId)
-                .requestedAmount(request.requestedAmount())
-                .installments(request.installments())
-                .reason(request.reason())
-                .status(LoanStatus.PENDING)
-                .build();
-    }
+//    public Loan toEntity(LoanRequest request, String customerId) {
+//        return Loan.builder()
+//                .customerId(customerId)
+//                .requestedAmount(request.requestedAmount())
+//                .installments(request.installments())
+//                .reason(request.reason())
+//                .status(LoanStatus.PENDING)
+//                .build();
+//    }
 
-    public LoanResponse toDTO(Loan loan) {
-        return new LoanResponse(
-                loan.getId(),
-                loan.getCustomerId(),
-                loan.getRequestedAmount(),
-                loan.getInstallments(),
-                loan.getReason(),
-                loan.getStatus(),
-                loan.getStatusHistory() != null ? 
-                        loan.getStatusHistory().stream()
-                                .map(h -> new StatusHistoryResponse(h.getStatus(), h.getChangedAt(), h.getNotes()))
-                                .toList() : null,
-                loan.getCreatedAt()
-        );
-    }
+//    public LoanResponse toDTO(Loan loan) {
+//        return new LoanResponse(
+//                loan.getId(),
+//                loan.getCustomerId(),
+//                loan.getRequestedAmount(),
+//                loan.getInstallments(),
+//                loan.getReason(),
+//                loan.getStatus(),
+//                loan.getStatusHistory() != null ?
+//                        loan.getStatusHistory().stream()
+//                                .map(h -> new StatusHistoryResponse(h.getStatus(), h.getChangedAt(), h.getNotes()))
+//                                .toList() : null,
+//                loan.getCreatedAt()
+//        );
+//    }
 }

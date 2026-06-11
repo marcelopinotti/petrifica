@@ -23,6 +23,8 @@ public class AdminFraudController {
     @GetMapping("/stats")
     @Operation(summary = "Estatísticas Gerais de Fraude", description = "Retorna métricas globais: total de aprovações, rejeições e score de risco médio")
     public ResponseEntity<AnalysisStatsResponse> getStats() {
-        return ResponseEntity.ok(fraudAnalysisService.getStats());
+        return ResponseEntity.ok(
+              //  fraudAnalysisService.getStats()
+        ).build();
     }
 }
